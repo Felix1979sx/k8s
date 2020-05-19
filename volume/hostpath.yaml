@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-hostpath
+  labels:
+    project: tj
+  namespace: default
+spec:
+  containers:
+  - name: test-hostpath
+    image: busybox
+    imagePullPolicy: IfNotPresent
+    volumeMounts:
+    - mountPath: /log
+      name: hostpathtest
+    args:
+    - /bin/sh
+    - -c
+    - echo "I'm hostpath test" >/log/hostpath.txt;sleep 3000
+  volumes:
+  - name: hostpathtest
+    hostPath: 
+      path: /data/hostpath
+

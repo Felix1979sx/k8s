@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: tj-web
+  name: tj-web
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tj-web
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: tj-web
+    spec:
+      containers:
+      - image: nginx
+        imagePullPolicy: IfNotPresent
+        name: nginx
+        ports:
+        - containerPort: 80
+          hostPort: 8080
+        volumeMounts:
+        - name: tjvolume
+          mountPath: "/usr/share/nginx/html"
+      initContainers:
+      - name: init-myservice
+        image: busybox
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: tjvolume
+          mountPath: /html
+        command: ['sh','-c','echo "Test deployment nginx index" > /html/index.html']    
+      volumes:
+      - name: tjvolume
+        emptyDir: {}
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tj-web
+  labels:
+    run: tj-web
+spec:
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 80
+    nodePort: 30010
+  selector:
+    app: tj-web
+  type: NodePort
+  
+  
+     
+  
