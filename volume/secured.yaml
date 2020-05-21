@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: secured
+  name: secured
+spec:
+  securityContext:
+    fsGroup: 3000
+  containers:
+  - image: nginx
+    imagePullPolicy: IfNotPresent
+    name: secured
+    ports:
+    - containerPort: 80
+    resources: {}
+    volumeMounts:
+    - name: test
+      mountPath: /data/app
+  volumes:
+  - name: test
+    emptyDir: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+  
+status: {}

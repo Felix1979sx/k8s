@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nglog-test
+  name: nglog-test
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nglog-test
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: nglog-test
+    spec:
+      containers:
+      - image: nginx
+        imagePullPolicy: IfNotPresent
+        name: nginx
+        ports:
+        - containerPort: 80
+          hostPort: 8081
+        volumeMounts:
+        - name: nglog
+          mountPath: "/var/log/nginx"
+      - name: catlog
+        image: busybox
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: nglog
+          mountPath: /nginxlog
+        command: ["/bin/sh","-c","tail -f /nginxlog/access.log"]
+      volumes:
+      - name: nglog
+        emptyDir: {}
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nglog-test
+  labels:
+    run: nglog-test
+spec:
+  ports:
+  - protocol: TCP
+    port: 8081
+    targetPort: 80
+    nodePort: 30011
+  selector:
+    app: nglog-test
+  type: NodePort
+  
+  
+     
+  
